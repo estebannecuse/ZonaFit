@@ -72,11 +72,52 @@ public class ClienteDAO implements IclienteDAO{
 
     @Override
     public boolean agregarCliente(Cliente cliente) {
+       PreparedStatement ps;
+       Connection con = Conexion.getConnection();
+       //como solo voy a hacer una query, no voy a manejar un resultado, no preciso RS
+       String sql = "INSERT into cliente(nombre, apellido, membresia) " + "VALUES(?, ?, ?)";
+       try{
+            ps = con.prepareStatement(sql);
+            ps.setString(1, cliente.getNombre());
+            ps.setString(2, cliente.getApellido());
+            ps.setInt(3,cliente.getMembresia());
+            ps.execute();
+            return true;
+       }catch(Exception e){
+           System.out.println("Error al agregar cliente " + e.getMessage());
+        }finally{
+           try{
+               con.close();
+           }catch(Exception e){
+               System.out.println("Error al cerrar la conexion" + e.getMessage());
+           }
+       }
+
         return false;
     }
 
     @Override
     public boolean modificarCliente(Cliente cliente) {
+        PreparedStatement ps;
+        Connection con = Conexion.getConnection();
+        String sql = "UPDATE cliente SET nombre=?, apellido=?, membresia=? "+ " WHERE id=?";
+        try{
+            ps = con.prepareStatement(sql);
+            ps.setString(1, cliente.getNombre());
+            ps.setString(2,cliente.getApellido());
+            ps.setInt(3, cliente.getMembresia());
+            ps.setInt(4,cliente.getId());
+            ps.execute();
+            return true;
+        }catch (Exception e){
+            System.out.println("Error al modificar cliente " + e.getMessage());
+        }finally{
+            try{
+                con.close();
+            }catch(Exception e){
+                System.out.println("Error al cerrar la conexion" + e.getMessage());
+            }
+        }
         return false;
     }
 
@@ -87,9 +128,48 @@ public class ClienteDAO implements IclienteDAO{
 
     public static void main(String[] args) {
         // prueba listar clientes
-        System.out.println("** Listar Clientes ***");
+//        System.out.println("** Listar Clientes ***");
         IclienteDAO clienteDao = new ClienteDAO();
+//        var clientes = clienteDao.listarClientes();
+//        clientes.forEach(System.out :: println);
+
+
+        // prueba buscar por id
+        var cliente1 = new Cliente(2);
+        System.out.println("Cliente antes de la busqueda" + cliente1);
+        var encontrado = clienteDao.buscarClientePorId(cliente1);
+        if(encontrado){
+            System.out.println("Cliente encontrado " + cliente1);
+        }else{
+            System.out.println(" no se encontro cliente con id: " + cliente1.getId());
+        }
+
+
+        //prueba agregar cliente
+
+//        var nuevoCliente = new Cliente("esteban", "Necuse", 400);
+//        var agregado = clienteDao.agregarCliente(nuevoCliente);
+//        if(agregado){
+//            System.out.println("Cliente agregado con exito: " + nuevoCliente);
+//        }else {
+//            System.out.println("No se pudo agregar el cliente");
+//        }
+        // modificar cliente
+
+        var modificarCliente = new Cliente(3, "Esteban Daniel", "Necuse", 400);
+        var modificado = clienteDao.modificarCliente(modificarCliente);
+        if(modificado){
+            System.out.println("cliente modificado " + modificado);
+        }else{
+            System.out.println("No se modifico");
+        }
+        //Listop de nuevo
+        System.out.println("** Listar Clientes ***");
         var clientes = clienteDao.listarClientes();
         clientes.forEach(System.out :: println);
+
+
+
+
     }
 }
